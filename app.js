@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 app.post('/metadata', async (req, res) => {
   const obj = req.body
   console.log({ obj })
-  const { nftBondAddress } = obj
+  const { nftBondAddress } = obj.data
   if (!nftBondAddress) {
     res.status(500)
   }
