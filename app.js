@@ -23,8 +23,7 @@ app.post('/metadata', async (req, res) => {
   const cid = await addFileToIpfs(nftBondAddress)
   console.log({ cid })
   await pinOnPinata(cid)
-  const resultUri = `ipfs://${cid}/`
-  res.status(200).json(Requester.success(0, { data: { result: resultUri }, status: 200 }))
+  res.status(200).json(Requester.success(0, { data: { result: '0' }, status: 200 }))
 })
 
 app.listen(port, () => console.log(`Listening on port ${port}!`))

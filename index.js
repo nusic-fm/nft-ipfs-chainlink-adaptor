@@ -13,23 +13,46 @@ const ipfs = ipfsClient.create({
 const abi = ['function name() view returns (string)', 'function symbol() view returns (string)', 'function numberOfBonds() view returns (uint256)']
 const nodeUrl = 'https://kovan.infura.io/v3/8a96c8751a3a47e4a0c63ecaeef558d4'
 
+const ratingArtMapping = {
+  AAA: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-01.svg',
+  AA: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-02.svg',
+  A: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-03.svg',
+  III: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-04.svg',
+  II: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-05.svg',
+  I: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-06.svg',
+  UUU: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-07.svg',
+  UU: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-08.svg',
+  U: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-09.svg',
+  R: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-10.svg'
+}
+
 async function addFileToIpfs(nftBondAddress) {
-  const provider = new ethers.providers.JsonRpcProvider(nodeUrl)
-  const contract = new ethers.Contract(nftBondAddress, abi, provider)
-  const name = await contract.name()
-  console.log({ name })
+  const nftContract = getContract(nftBondAddress, abi)
+  const name = await nftContract.name()
   // const symbol = await contract.symbol()
-  const numberOfBondsBN = await contract.numberOfBonds()
+  const numberOfBondsBN = await nftContract.numberOfBonds()
   const numberOfBonds = parseInt(numberOfBondsBN.toString())
   console.log({ numberOfBonds })
-  const description = ''
+  const assetPoolAddress = await nftContract.assetPoolAddress()
+  // TODO
+  const description = 'Minted from NUSIC'
   const files = []
+  const getRatingAbi = ['function allocateRatingByAssetPoolAddress(address _assetPoolAddress, uint256 _couponRate) public view returns(string)']
+  const ratingEngineContract = getContract(nftBondAddress, getRatingAbi)
+  // Default art for rating
+  let image = ratingArtMapping.AA
+  try {
+    const rating = await ratingEngineContract.allocateRatingByAssetPoolAddress(assetPoolAddress, ethers.utils.parseEther('2'))
+    image = ratingArtMapping[rating]
+  } catch (e) {
+    console.error(e)
+    // Continues with default art for NFT, rating will be set in the next cycle
+  }
   for (let i = 0; i < numberOfBonds; i++) {
     const doc = JSON.stringify({
       name,
       description,
-      // TODO
-      image: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-03.svg'
+      image
     })
     files.push({
       path: `/${nftBondAddress}/${i}.json`,
@@ -41,12 +64,24 @@ async function addFileToIpfs(nftBondAddress) {
     console.log(result)
     results.push(result)
   }
-  return results[results.length - 1].cid.toString()
+  const cid = results[results.length - 1].cid.toString()
+  const resultUri = `ipfs://${cid}/`
+  const setBaseUriAbi = ['function setBaseURI(string uri) public']
+  const contract = getContract(nftBondAddress, setBaseUriAbi)
+  try {
+    await contract.setBaseURI(resultUri)
+  } catch (e) {
+    console.error(e)
+  }
+  return cid
 }
 async function pinOnPinata(cid) {
   const obj = await pinata.pinByHash(cid)
   console.log({ obj })
 }
-
+function getContract(address, abi) {
+  const provider = new ethers.providers.JsonRpcProvider(nodeUrl)
+  return new ethers.Contract(address, abi, provider)
+}
 module.exports.addFileToIpfs = addFileToIpfs
 module.exports.pinOnPinata = pinOnPinata
