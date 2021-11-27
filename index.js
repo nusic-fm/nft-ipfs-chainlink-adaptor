@@ -10,7 +10,13 @@ const ipfs = ipfsClient.create({
   protocol: 'https'
 })
 // const ipfs = ipfsClient.create({ url: '/ip4/127.0.0.1/tcp/5001' })
-const abi = ['function name() view returns (string)', 'function symbol() view returns (string)', 'function numberOfBonds() view returns (uint256)']
+const bondNftabi = [
+  'function name() view returns (string)',
+  'function symbol() view returns (string)',
+  'function numberOfBonds() view returns (uint256)',
+  'function assetPoolAddress() view returns (address)',
+  'function setBaseURI(string uri) public'
+]
 const nodeUrl = 'https://kovan.infura.io/v3/8a96c8751a3a47e4a0c63ecaeef558d4'
 
 const ratingArtMapping = {
@@ -27,7 +33,7 @@ const ratingArtMapping = {
 }
 
 async function addFileToIpfs(nftBondAddress) {
-  const nftContract = getContract(nftBondAddress, abi)
+  const nftContract = getContract(nftBondAddress, bondNftabi)
   const name = await nftContract.name()
   // const symbol = await contract.symbol()
   const numberOfBondsBN = await nftContract.numberOfBonds()
@@ -66,10 +72,8 @@ async function addFileToIpfs(nftBondAddress) {
   }
   const cid = results[results.length - 1].cid.toString()
   const resultUri = `ipfs://${cid}/`
-  const setBaseUriAbi = ['function setBaseURI(string uri) public']
-  const contract = getContract(nftBondAddress, setBaseUriAbi)
   try {
-    await contract.setBaseURI(resultUri)
+    await nftContract.setBaseURI(resultUri)
   } catch (e) {
     console.error(e)
   }
