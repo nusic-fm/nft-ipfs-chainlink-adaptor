@@ -33,7 +33,7 @@ const ratingArtMapping = {
 }
 
 async function addFileToIpfs(nftBondAddress) {
-  const nftContract = getContract(nftBondAddress, bondNftabi)
+  const nftContract = getContract(nftBondAddress, bondNftabi, true)
   const name = await nftContract.name()
   // const symbol = await contract.symbol()
   const numberOfBondsBN = await nftContract.numberOfBonds()
@@ -83,9 +83,9 @@ async function pinOnPinata(cid) {
   const obj = await pinata.pinByHash(cid)
   console.log({ obj })
 }
-function getContract(address, abi) {
+function getContract(address, abi, isSigner = false) {
   const provider = new ethers.providers.JsonRpcProvider(nodeUrl)
-  return new ethers.Contract(address, abi, provider)
+  return new ethers.Contract(address, abi, isSigner ? provider.getSigner() : provider)
 }
 module.exports.addFileToIpfs = addFileToIpfs
 module.exports.pinOnPinata = pinOnPinata
