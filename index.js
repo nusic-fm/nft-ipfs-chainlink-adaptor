@@ -3,6 +3,7 @@ const ipfsClient = require('ipfs-http-client')
 const pinataSDK = require('@pinata/sdk')
 const { ethers } = require('ethers')
 const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY)
+require('dotenv').config()
 
 const ipfs = ipfsClient.create({
   host: 'ipfs.infura.io',
@@ -44,7 +45,7 @@ async function addFileToIpfs(nftBondAddress) {
   const description = 'Minted from NUSIC'
   const files = []
   const getRatingAbi = ['function allocateRatingByAssetPoolAddress(address _assetPoolAddress, uint256 _couponRate) public view returns(string)']
-  const ratingEngineContract = getContract(nftBondAddress, getRatingAbi)
+  const ratingEngineContract = getContract(process.env.RATING_ENGINE_ADDRESS, getRatingAbi)
   // Default art for rating
   let image = ratingArtMapping.AA
   try {
@@ -85,7 +86,7 @@ async function pinOnPinata(cid) {
 }
 function getContract(address, abi, isSigner = false) {
   const provider = new ethers.providers.JsonRpcProvider(nodeUrl)
-  return new ethers.Contract(address, abi, isSigner ? new ethers.Wallet(process.env.KOVAN_PRIVATE_KEY, provider) : provider)
+  return new ethers.Contract(address, abi, new ethers.Wallet(process.env.KOVAN_PRIVATE_KEY, provider))
 }
 module.exports.addFileToIpfs = addFileToIpfs
 module.exports.pinOnPinata = pinOnPinata
