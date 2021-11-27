@@ -2,7 +2,7 @@
 const ipfsClient = require('ipfs-http-client')
 const pinataSDK = require('@pinata/sdk')
 const { ethers } = require('ethers')
-const pinata = pinataSDK('7c809656e4adb0d74ad1', '4fed0c63a69cab565fa90b1cac5a1827b4f8c23f3c7774d0fac19243e44f3cec')
+const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY)
 
 const ipfs = ipfsClient.create({
   host: 'ipfs.infura.io',
@@ -17,7 +17,7 @@ const bondNftabi = [
   'function assetPoolAddress() view returns (address)',
   'function setBaseURI(string uri) public'
 ]
-const nodeUrl = 'https://kovan.infura.io/v3/8a96c8751a3a47e4a0c63ecaeef558d4'
+const nodeUrl = `https://kovan.infura.io/v3/${process.env.INFURA_ID}`
 
 const ratingArtMapping = {
   AAA: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-01.svg',
@@ -85,7 +85,7 @@ async function pinOnPinata(cid) {
 }
 function getContract(address, abi, isSigner = false) {
   const provider = new ethers.providers.JsonRpcProvider(nodeUrl)
-  return new ethers.Contract(address, abi, isSigner ? provider.getSigner() : provider)
+  return new ethers.Contract(address, abi, isSigner ? new ethers.Wallet(process.env.KOVAN_PRIVATE_KEY, provider) : provider)
 }
 module.exports.addFileToIpfs = addFileToIpfs
 module.exports.pinOnPinata = pinOnPinata
