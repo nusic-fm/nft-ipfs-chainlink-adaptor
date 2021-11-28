@@ -2,8 +2,9 @@
 const ipfsClient = require('ipfs-http-client')
 const pinataSDK = require('@pinata/sdk')
 const { ethers } = require('ethers')
-const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY)
 require('dotenv').config()
+
+const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_KEY)
 
 const ipfs = ipfsClient.create({
   host: 'ipfs.infura.io',
@@ -13,7 +14,6 @@ const ipfs = ipfsClient.create({
 // const ipfs = ipfsClient.create({ url: '/ip4/127.0.0.1/tcp/5001' })
 const bondNftabi = [
   'function name() view returns (string)',
-  'function symbol() view returns (string)',
   'function numberOfBonds() view returns (uint256)',
   'function assetPoolAddress() view returns (address)',
   'function setBaseURI(string uri) public'
@@ -21,21 +21,22 @@ const bondNftabi = [
 const nodeUrl = `https://rinkeby.infura.io/v3/${process.env.INFURA_ID}`
 
 const ratingArtMapping = {
-  AAA: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-01.svg',
-  AA: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-02.svg',
-  A: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-03.svg',
-  III: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-04.svg',
-  II: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-05.svg',
-  I: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-06.svg',
-  UUU: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-07.svg',
-  UU: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-08.svg',
-  U: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-09.svg',
-  R: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-10.svg'
+  AAA: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-01.png',
+  AA: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-02.png',
+  A: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-03.png',
+  III: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-04.png',
+  II: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-05.png',
+  I: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-06.png',
+  UUU: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-07.png',
+  UU: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-08.png',
+  U: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-09.png',
+  R: 'ipfs://QmQZU7zwiGEQaimZDgogvZx1FHK1kzGrAEfeB4Ttg4qKQP/NusicFractal-10.png'
 }
 
 async function addFileToIpfs(nftBondAddress) {
   const nftContract = getContract(nftBondAddress, bondNftabi, true)
   const name = await nftContract.name()
+  console.log({ name })
   // const symbol = await contract.symbol()
   const numberOfBondsBN = await nftContract.numberOfBonds()
   const numberOfBonds = parseInt(numberOfBondsBN.toString())
@@ -51,6 +52,8 @@ async function addFileToIpfs(nftBondAddress) {
   try {
     const rating = await ratingEngineContract.allocateRatingByAssetPoolAddress(assetPoolAddress, ethers.utils.parseEther('2'))
     image = ratingArtMapping[rating]
+    console.log('image is set using rating')
+    // ipfs://QmVmSHqHVrykvMYZ3tHGu6EjXcFyZ93MNCjTkRv4dd5nui/319.png
   } catch (e) {
     console.error(e)
     // Continues with default art for NFT, rating will be set in the next cycle
@@ -72,17 +75,23 @@ async function addFileToIpfs(nftBondAddress) {
     results.push(result)
   }
   const cid = results[results.length - 1].cid.toString()
-  const resultUri = `ipfs://${cid}/`
+  await pinOnPinata(cid)
+  const resultUri = `https://gateway.pinata.cloud/ipfs/${cid}`
   try {
     await nftContract.setBaseURI(resultUri)
+    console.log('base uri is set')
   } catch (e) {
     console.error(e)
   }
   return cid
 }
 async function pinOnPinata(cid) {
-  const obj = await pinata.pinByHash(cid)
-  console.log({ obj })
+  try {
+    const obj = await pinata.pinByHash(cid)
+    console.log({ obj })
+  } catch (e) {
+    console.log(e)
+  }
 }
 function getContract(address, abi, isSigner = false) {
   const provider = new ethers.providers.JsonRpcProvider(nodeUrl)
