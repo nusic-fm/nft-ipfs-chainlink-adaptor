@@ -42,8 +42,6 @@ async function addFileToIpfs(nftBondAddress) {
   const numberOfBonds = parseInt(numberOfBondsBN.toString())
   console.log({ numberOfBonds })
   const assetPoolAddress = await nftContract.assetPoolAddress()
-  // TODO
-  const description = 'Minted from NUSIC'
   const files = []
   const getRatingAbi = ['function allocateRatingByAssetPoolAddress(address _assetPoolAddress, uint256 _couponRate) public view returns(string)']
   const ratingEngineContract = getContract(process.env.RATING_ENGINE_ADDRESS, getRatingAbi)
@@ -61,7 +59,7 @@ async function addFileToIpfs(nftBondAddress) {
   for (let i = 0; i < numberOfBonds; i++) {
     const doc = JSON.stringify({
       name,
-      description,
+      description: `This is ${i + 1} of ${numberOfBonds} royalty bearing NFT music bonds issued by ${name}`,
       image
     })
     files.push({
