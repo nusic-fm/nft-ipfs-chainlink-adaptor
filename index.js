@@ -76,7 +76,7 @@ async function addFileToIpfs(nftBondAddress) {
   }
   const cid = results[results.length - 1].cid.toString()
   await pinOnPinata(cid)
-  const resultUri = `https://gateway.pinata.cloud/ipfs/${cid}`
+  const resultUri = `https://gateway.pinata.cloud/ipfs/${cid}/`
   try {
     await nftContract.setBaseURI(resultUri)
     console.log('base uri is set')
