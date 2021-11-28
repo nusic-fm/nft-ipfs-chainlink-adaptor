@@ -18,7 +18,7 @@ const bondNftabi = [
   'function assetPoolAddress() view returns (address)',
   'function setBaseURI(string uri) public'
 ]
-const nodeUrl = `https://kovan.infura.io/v3/${process.env.INFURA_ID}`
+const nodeUrl = `https://rinkeby.infura.io/v3/${process.env.INFURA_ID}`
 
 const ratingArtMapping = {
   AAA: 'https://ipfs.io/ipfs/QmaJ5oKx9QzeFxaJLiuTKzsfRoaujjRd7n3ux6zKXxTkci/Nusic%20Bond%20Fractals/NusicFractal-01.svg',
